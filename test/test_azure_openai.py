@@ -3,16 +3,18 @@ from openai.types import Embedding
 from dotenv import load_dotenv
 import pytest
 import os
-
+import logging
 # Load the shared environment variables, not secrets
 load_dotenv(".env.shared")
 
 try:
     # Check if we are on github
-    API_KEY = os.environ["OPENAI_API_KEY"]
+    OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+    logging.info("Loaded API key from environment")
 except KeyError:
     # Apparently we are local, so lets load the key
     load_dotenv(".env.secret")
+    logging.info("Loaded API key from .env.secret")
 
 
 @pytest.fixture
