@@ -41,11 +41,13 @@ def test_chat_completion(client, model_deployment):
     assert isinstance(completion.choices[0].message.content, str)
 
 
-def test_completion(client):
+@pytest.mark.parametrize("model_deployment", [os.environ["DAVINCI002_DEPLOYMENT"],
+                                              os.environ["GPT35TurboInstruct_DEPLOYMENT"]])
+def test_completion(client, model_deployment):
     """
     Test the completion API
     """
-    completion = client.completions.create(model=os.environ["DAVINCI002_DEPLOYMENT"],
+    completion = client.completions.create(model=model_deployment,
                                            prompt="Hello world")
     assert isinstance(completion.choices[0].text, str)
 
