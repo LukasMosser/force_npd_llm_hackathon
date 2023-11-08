@@ -24,4 +24,4 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           pip install pytest pytest-cov
-          pytest test/test_azure_openai.py --log-cli-level="info"
+          pytest test/test_azure_openai.py --log-cli-level="debug"

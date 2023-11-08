@@ -19,6 +19,7 @@ except KeyError:
 
 @pytest.fixture
 def client():
+    logging.info("OPENAI_API_BASE="+os.environ["OPENAI_API_BASE"])
     openai_client = AzureOpenAI(
         api_version=os.environ["OPENAI_API_VERSION"],
         azure_endpoint=os.environ["OPENAI_API_BASE"],
