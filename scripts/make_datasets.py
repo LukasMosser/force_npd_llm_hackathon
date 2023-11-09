@@ -14,7 +14,7 @@ handler.setFormatter(formatter)
 root.addHandler(handler)
 
 CORPORA = {
-    "NL_NOG_PR": "Netherlands - Netherlands Oil _ Gas Portal reports.csv",
+    "NL_NOG_PR": "Netherlands - Netherlands Oil & Gas Portal reports.csv",
     "NO_NPD_DI": "Norway - Diskos reports.csv",
     "NO_NPD_RR": "Norway - Norwegian Petroleum Directorate relinquishment reports.csv",
     "UK_NTA_NDR": "UK - North Sea Transition Authority NDR reports.csv",

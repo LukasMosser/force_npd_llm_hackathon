@@ -1,14 +1,15 @@
 import tiktoken
 from datasets import load_dataset
 from tqdm.auto import tqdm
-from datasets import load_dataset, ClassLabel, Value, Features
+from datasets import load_dataset, Value, Features
 
 features = Features({'doc_id': Value('string'), 'meta': Value('string'), 'raw_content': Value('string')})
 
+# Encoder for embedding-ada-002
 enc = tiktoken.get_encoding("cl100k_base")
 
 force_llm_scrubbed_dataset = load_dataset("json", 
-                                          data_files="data/force_llm_corpus_scrubbed.jsonl", 
+                                          data_files="data/force_llm_corpus_scrubbed_embedding_docs.jsonl", 
                                           split='train', 
                                           features=features)
 
