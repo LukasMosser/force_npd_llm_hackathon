@@ -64,9 +64,9 @@ def make_row_data(corpus, row, chunk_size, overlap, content_column):
     chunks = split_text_into_chunks_for_loop(str(row[content_column]), chunk_size=chunk_size, overlap_fraction=overlap)
 
     for idx, chunk in enumerate(chunks):
-        chunk_dict = {'raw_content': str('{'+f'"Content": "{chunk}", "Document Corpus": "{corpus}", "Filename": "{filename}"'+'}'),
-                'doc_id': str(corpus + '/' + str(row['filename']) + '/' + str(row['page'])+'/'+str(idx)), 
-                'meta': str('{"_id":' + row['_id'] + '"corpus": ' + corpus + ', "possible_lanaguage":' + str(row['possible_language']) + ', "langdetect":' + str(row['langdetect']) + '}')
+        chunk_dict = {'raw_content': '{'+f'"Content": "{chunk}", "Document Corpus": "{corpus}", "Filename": "{filename}"'+'}',
+                'doc_id': '"'+str(corpus) + '/' + str(row['filename']) + '/' + str(row['page'])+'/'+str(idx)+'"', 
+                'meta': '{"_id": "' + row['_id'] + '", "corpus": "' + corpus + '", "possible_lanaguage": "' + str(row['possible_language']) + '", "langdetect": "' + str(row['langdetect']) + '"}'
                 }
         yield chunk_dict
 

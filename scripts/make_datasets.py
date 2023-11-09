@@ -33,7 +33,7 @@ def make_jsonl_dataset(corpora: Dict[str, str], output_path: str, raw_content_co
         df_temp = pd.DataFrame()
         df_temp['raw_content'] = df[raw_content_column].astype(str)
         df_temp['doc_id'] = corpus + '/' + df['filename'].astype(str) + '/' + df['page'].astype(str)
-        df_temp['meta'] = '{"_id":' + df['_id'] + '"corpus": ' + corpus + ', "possible_lanaguage":' + df['possible_language'].astype(str) + ', "langdetect":' + df['langdetect'].astype(str) + '}'
+        df_temp['meta'] = '{"_id": "' + df['_id'] + '", "corpus": "' + corpus + '", "possible_lanaguage": "' + df['possible_language'].astype(str) + '", "langdetect": "' + df['langdetect'].astype(str) + '"}'
 
         # Append to the output DataFrame
         df_out = pd.concat([df_out, df_temp], ignore_index=True)
