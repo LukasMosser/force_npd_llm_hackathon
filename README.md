@@ -33,17 +33,50 @@ And remember it is not just about the models, but the data is where the gold may
 
 The data is here - what will you build?  
 
-## Description
-
-### Dataset
+## Dataset
 
 The dataset is provided courtesy of FORCE, FORCE Sponsors, and the National Petroleum Direktorate of Norway. 
-
 Here we process the dataset first to concatenate into one format that follows the standard used for very large datasets such as RedPyjama or ThePile.
-
 Number of tokens (scrubbed - cl100k_base): 755829106
 
-## Usage
+Maybe Jesse can contribute this part
+
+## Preprocessing
+
+Examples for preprocessing the dataset are provided in the `scripts` folder.
+
+- `scripts/make_dataset.py` creates one big jsonl file from the raw dataset with metadata stored per entry.
+- `scripts/make_embedding_docs.py` creates a chunked version of the dataset that can be used for computing embeddings and subsequently retrieval augmented generation. 
+- `scripts/estimate_embedding_cost.py` estimates the total cost of producing embeddings from the chunked embeddings dataset.
+
+## Installation
+
+To install the required dependencies please create a virtual environment and install the dependencies from the requirements file:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Environment Variables
+
+We have two .env files, one for shared variables that can be distributed openly, and one for the API key which will be distributed as part of the hackathon. 
+`.env.shared` contains the variables we will use in the notebooks and scripts. 
+`.env.secret` contains the API key for the Azure OpenAI API.
+
+## Starter Notebook
+
+A starter notebook can be found in the `notebooks` folder. It contains examples for loading the dataset, preprocessing, and training a CBOW model, as well as examples for using the embeddings to compute similarity and perform retrieval augmented generation.
+In addition there is also an example of fine-tuning your own sentence-level embedding model. 
+
+## Data generated from the starter notebook:
+
+You can access a version of data that is generated from the started notebook [here]().
 
 ## License
+
+The dataset is licensed under the <insert license here>
+
+Code in this repository is licensed under the MIT license.
 
