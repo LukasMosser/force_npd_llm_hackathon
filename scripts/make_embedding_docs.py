@@ -60,19 +60,33 @@ def split_text_into_chunks_for_loop(text, chunk_size, overlap_fraction):
 
 
 def make_row_data(corpus, row, chunk_size, overlap, content_column):
+    import json
     filename = str(row['filename'])
     chunks = split_text_into_chunks_for_loop(str(row[content_column]), chunk_size=chunk_size, overlap_fraction=overlap)
 
     for idx, chunk in enumerate(chunks):
-        chunk_dict = {'raw_content': '{'+f'"Content": "{chunk}", "Document Corpus": "{corpus}", "Filename": "{filename}"'+'}',
-                'doc_id': '"'+str(corpus) + '/' + str(row['filename']) + '/' + str(row['page'])+'/'+str(idx)+'"', 
-                'meta': '{"_id": "' + row['_id'] + '", "corpus": "' + corpus + '", "possible_lanaguage": "' + str(row['possible_language']) + '", "langdetect": "' + str(row['langdetect']) + '"}'
+        chunk_dict = {
+            "raw_content": {"Content": chunk, "Document Corpus": corpus, "Filename": filename},
+            "doc_id": str(corpus)+"\\"+str(row['filename'])+"\\"+str(row['page'])+"\\"+str(idx),           
+            "meta": {
+                "_id": row['_id'], "corpus": corpus, 
+                "possible_lanaguage": str(row['possible_language']), 
+                "langdetect": str(row['langdetect']),
+                "content_could_be_natural_language": str(row['content_could_be_natural_language']),
                 }
+        }
+        """with open("temp.jsonl", "w", encoding='utf-8') as f:
+            json.dump(chunk_dict, f)
+        try:
+            with open("temp.jsonl", "r", encoding='utf-8') as f:
+                chunk_dict = json.load(f)
+        except json.decoder.JSONDecodeError:
+            print("Failed to load: ", chunk_dict)
+            print(filename, str(row['page']), idx)"""
         yield chunk_dict
 
 def make_jsonl_dataset(corpora: Dict[str, str], output_path: str, raw_content_column: str = 'content', chunk_size: int = 500, overlap: float = 0.66) -> None :
     root.info(f"Generating dataset. Corpora: {corpora}, Raw Content Column: {raw_content_column}, Output Path: {output_path}")
-    df_out = pd.DataFrame()
     for corpus, fpath in corpora.items():
         # Read the CSV file with low memory to avoid dtype warning for mixed types
         df = pd.read_csv(fpath, low_memory=True)
@@ -83,14 +97,14 @@ def make_jsonl_dataset(corpora: Dict[str, str], output_path: str, raw_content_co
         for idx, row in tqdm(df.iterrows(), total=len(df)):
             for chunk_dict in make_row_data(corpus, row, chunk_size, overlap, raw_content_column):
                 data.append(chunk_dict)
-        df_temp = pd.DataFrame(data, columns=["doc_id", "raw_content", "meta"], dtype=str)
-        # Append to the output DataFrame
-        df_out = pd.concat([df_out, df_temp], ignore_index=True)
-        root.info(f"Concatenated to corpus")
-    
-    root.info("Writing corpus to disk.")
-    df_out.to_json(output_path, orient="records", lines=True)
-    root.info(f"Successfully wrote corpus to disk at: {output_path}")
+        
+            df_temp = pd.DataFrame(data, columns=["doc_id", "raw_content", "meta"])
+            if (idx % 10000 == 0 and idx != 0) or idx == len(df)-1:
+                with open(output_path, 'a', encoding='utf-8') as file:
+                    df_temp.to_json(file, orient="records", lines=True, force_ascii=False)
+                data = []
+                df_temp = pd.DataFrame()
+                root.info("Wrote to disk and cleared memory")
 
 if __name__ == "__main__":
 
@@ -102,7 +116,7 @@ if __name__ == "__main__":
     corpora = {corpus: input_directory+'/'+path for corpus, path in CORPORA.items()}
     
     make_jsonl_dataset(corpora=corpora, 
-                       output_path=f"{output_directory}/force_llm_corpus_scrubbed_embedding_docs.jsonl", 
+                       output_path=f"{output_directory}/force_llm_corpus_scrubbed_embedding_docs_v2.jsonl", 
                        raw_content_column='content_scrubbed_light', 
                        chunk_size=chunk_size,
                        overlap=overlap
