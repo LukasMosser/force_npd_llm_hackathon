@@ -75,14 +75,6 @@ def make_row_data(corpus, row, chunk_size, overlap, content_column):
                 "content_could_be_natural_language": str(row['content_could_be_natural_language']),
                 }
         }
-        """with open("temp.jsonl", "w", encoding='utf-8') as f:
-            json.dump(chunk_dict, f)
-        try:
-            with open("temp.jsonl", "r", encoding='utf-8') as f:
-                chunk_dict = json.load(f)
-        except json.decoder.JSONDecodeError:
-            print("Failed to load: ", chunk_dict)
-            print(filename, str(row['page']), idx)"""
         yield chunk_dict
 
 def make_jsonl_dataset(corpora: Dict[str, str], output_path: str, raw_content_column: str = 'content', chunk_size: int = 500, overlap: float = 0.66) -> None :
@@ -110,13 +102,13 @@ if __name__ == "__main__":
 
     input_directory = "./data/raw"
     output_directory = "./data"
-    chunk_size = 300
-    overlap = 0.66
+    chunk_size = 500
+    overlap = 0.33
 
     corpora = {corpus: input_directory+'/'+path for corpus, path in CORPORA.items()}
     
     make_jsonl_dataset(corpora=corpora, 
-                       output_path=f"{output_directory}/force_llm_corpus_scrubbed_embedding_docs_v2.jsonl", 
+                       output_path=f"{output_directory}/force_llm_corpus_scrubbed_embedding_docs.jsonl", 
                        raw_content_column='content_scrubbed_light', 
                        chunk_size=chunk_size,
                        overlap=overlap

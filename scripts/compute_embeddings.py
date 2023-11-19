@@ -8,6 +8,13 @@ from openai import BadRequestError
 import json
 from tqdm.auto import tqdm 
 import time
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)  # for exponential backoff
+import tiktoken
+import time
 
 CORPORA = {
     "NL_NOG_PR": "Netherlands - Netherlands Oil & Gas Portal reports.csv",
@@ -30,7 +37,9 @@ features = Features({'doc_id': Value('string'),
                                                  })
 })
 
-force_llm_dataset_scrubbed = load_dataset("json", data_files="./data/force_llm_corpus_scrubbed_embedding_docs.jsonl", features=features).filter(lambda x: x['meta']["corpus"] == "UK_NTA_RR")
+force_llm_dataset_scrubbed = load_dataset("json", data_files="./data/force_llm_corpus_scrubbed_embedding_docs.jsonl", features=features)
+
+enc = tiktoken.get_encoding("cl100k_base")
 
 def fetch_dataset_records(dataset, batch_size=16):
     num_batches = (len(dataset) + batch_size - 1) // batch_size
@@ -56,19 +65,30 @@ def make_embedding_text(batch_content):
     embedding_text = f"FILENAME: {filename}| CORPUS: {corpus} | TEXT: {content}"
     return embedding_text
 
+
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(100))
+def embeddings_with_backoff(**kwargs):
+    return openai_client.embeddings.create(**kwargs)
+
+total_tokens = 0
 embeddings_list = []
-batch_size = 16	
+batch_size = 16
+start_time = time.time()
 with open("./data/force_llm_corpus_scrubbed_embeddings.jsonl", "w+") as f:
-    for batch in tqdm(fetch_dataset_records(force_llm_dataset_scrubbed['train'], batch_size=batch_size), total=len(force_llm_dataset_scrubbed['train']) // batch_size):
+    prg_bar = tqdm(fetch_dataset_records(force_llm_dataset_scrubbed['train'], batch_size=batch_size), total=len(force_llm_dataset_scrubbed['train']) // batch_size)
+    for batch in prg_bar:
         try:
             batch_content = []
             for x in batch["raw_content"]:
                 batch_content.append(x)
             
             embedding_text = [make_embedding_text(x) for x in batch_content]
-            embeddings = openai_client.with_options(max_retries=5).embeddings.create(input=embedding_text, 
-                                        model=os.environ["ADA002_DEPLOYMENT"])
+            total_tokens += sum([len(enc.encode(x)) for x in embedding_text])
+            embeddings = embeddings_with_backoff(input=embedding_text, model=os.environ["ADA002_DEPLOYMENT"])
+            current_time = time.time()
             time.sleep(0.5)
+            avg_tokens_per_second = total_tokens / (current_time - start_time)
+            prg_bar.set_description_str(f"Total tokens: {total_tokens}. Average tokens per second: {avg_tokens_per_second}. Max tokens per second: {350_000/60.}.")
             for doc_id, embedding in zip(batch["doc_id"], embeddings.data):
                 f.write(json.dumps({"doc_id": doc_id, "embedding": embedding.embedding}) + "\n")
 
@@ -76,8 +96,8 @@ with open("./data/force_llm_corpus_scrubbed_embeddings.jsonl", "w+") as f:
             try: 
                 for i, id, text in enumerate(zip(batch["doc_id"], batch["raw_content"])):
                     try:
-                        embedding = openai_client.with_options(max_retries=5).embeddings.create(input=text, 
-                                            model=os.environ["ADA002_DEPLOYMENT"])
+                        total_tokens += sum([len(enc.encode(x)) for x in embedding_text])
+                        embeddings = embeddings_with_backoff(input=text, model=os.environ["ADA002_DEPLOYMENT"])
                         f.write(json.dumps({"doc_id": id, "embedding": embedding.data[0].embedding}) + "\n")
                     except (JSONDecodeError, BadRequestError, ValueError):
                         f.write(json.dumps({"doc_id": id, "embedding": []}) + "\n")
