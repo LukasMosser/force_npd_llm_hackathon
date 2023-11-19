@@ -174,3 +174,4 @@ widgetsnbextension==4.0.9
 xxhash==3.4.1
 yarl==1.9.2
 zipp==3.17.0
+faiss-cpu
