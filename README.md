@@ -44,6 +44,9 @@ Examples for preprocessing the dataset are provided in the `scripts` folder.
 - `scripts/make_dataset.py` creates one big jsonl file from the raw dataset with metadata stored per entry.
 - `scripts/make_embedding_docs.py` creates a chunked version of the dataset that can be used for computing embeddings and subsequently retrieval augmented generation. 
 - `scripts/estimate_embedding_cost.py` estimates the total cost of producing embeddings from the chunked embeddings dataset.
+- `scripts/compute_embeddings.py` example of how the ada2 embeddings were generated
+- `scripts/filter_embeddings_natural_language.py` example how the whole embeddings were trimmed down to only the natural language embeddings
+- `scripts/read_embeddings_file.py` part of the embeddings file is corrupted hence it must be read character by character. This shows how.
 
 ## Installation
 
