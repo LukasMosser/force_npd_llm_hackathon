@@ -74,7 +74,7 @@ total_tokens = 0
 embeddings_list = []
 batch_size = 16
 start_time = time.time()
-with open("./data/force_llm_corpus_scrubbed_embeddings.jsonl", "w+") as f:
+with open("./data/force_llm_corpus_scrubbed_embeddings.jsonl_", "w+") as f:
     prg_bar = tqdm(fetch_dataset_records(force_llm_dataset_scrubbed['train'], batch_size=batch_size), total=len(force_llm_dataset_scrubbed['train']) // batch_size)
     for batch in prg_bar:
         try:
